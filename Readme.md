@@ -1,10 +1,11 @@
-# PDF to JPG Converter API
+# PDF Converter API
 
-Simple FastAPI backend service for converting PDF files (maximum 1 page) to JPG images.
+Simple FastAPI backend service for converting PDF files and merging multiple PDFs.
 
 ## Features
 
 - Convert PDF to JPG (first page only)
+- Merge multiple PDF files into a single PDF
 - Clean code architecture with separated concerns
 - File validation and error handling
 - RESTful API with automatic documentation
@@ -92,6 +93,13 @@ The API will be available at: `http://localhost:8000`
   - `file`: PDF file (multipart/form-data)
 - **Response:** JPG image file
 
+#### Merge PDFs
+- **POST** `/api/merge-pdfs`
+- Upload multiple PDF files and receive a single merged PDF
+- **Parameters:**
+  - `files`: List of PDF files (multipart/form-data, minimum 2 files)
+- **Response:** Merged PDF file
+
 ### API Documentation
 
 Once the server is running, visit:
@@ -148,6 +156,64 @@ fetch('http://localhost:8000/api/convert-pdf-to-jpg', {
 });
 ```
 
+### Merge PDFs
+
+#### Using cURL
+
+```bash
+curl -X POST "http://localhost:8000/api/merge-pdfs" \
+  -H "accept: application/pdf" \
+  -H "Content-Type: multipart/form-data" \
+  -F "files=@/path/to/first.pdf" \
+  -F "files=@/path/to/second.pdf" \
+  -F "files=@/path/to/third.pdf" \
+  --output merged.pdf
+```
+
+#### Using Python Requests
+
+```python
+import requests
+
+url = "http://localhost:8000/api/merge-pdfs"
+files = [
+    ('files', open('first.pdf', 'rb')),
+    ('files', open('second.pdf', 'rb')),
+    ('files', open('third.pdf', 'rb'))
+]
+
+response = requests.post(url, files=files)
+
+if response.status_code == 200:
+    with open('merged.pdf', 'wb') as f:
+        f.write(response.content)
+    print("Merge successful!")
+else:
+    print(f"Error: {response.status_code}")
+```
+
+#### Using JavaScript Fetch
+
+```javascript
+const formData = new FormData();
+formData.append('files', fileInput1.files[0]);
+formData.append('files', fileInput2.files[0]);
+formData.append('files', fileInput3.files[0]);
+
+fetch('http://localhost:8000/api/merge-pdfs', {
+  method: 'POST',
+  body: formData
+})
+.then(response => response.blob())
+.then(blob => {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'merged.pdf';
+  a.click();
+});
+```
+
 ## Configuration
 
 Edit `config.py` to customize:
@@ -167,7 +233,7 @@ The project follows clean code architecture:
    - `utils/`: Utility functions
 
 2. **Single Responsibility**: Each module has a specific purpose
-   - `pdf_service.py`: PDF conversion logic only
+   - `pdf_service.py`: PDF conversion and merging logic only
    - `file_handler.py`: File operations only
    - `converter.py`: API routing only
 

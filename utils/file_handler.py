@@ -5,6 +5,7 @@ File handling utilities for upload and cleanup operations
 import os
 import uuid
 from pathlib import Path
+from typing import List
 from fastapi import UploadFile, HTTPException
 from config import ALLOWED_EXTENSIONS, MAX_FILE_SIZE, UPLOAD_DIR, CONVERTED_DIR
 
@@ -107,3 +108,47 @@ def get_file_size(file_path: str) -> int:
         File size in bytes
     """
     return os.path.getsize(file_path)
+
+
+def save_multiple_upload_files(files: List[UploadFile]) -> List[str]:
+    """
+    Save multiple uploaded files to disk with unique filenames
+    
+    Args:
+        files: List of uploaded file objects
+        
+    Returns:
+        List of paths to the saved files
+        
+    Raises:
+        HTTPException: If file saving fails
+    """
+    saved_paths = []
+    
+    try:
+        for file in files:
+            # Validate each file
+            validate_file(file)
+            
+            # Save file
+            file_path = save_upload_file(file)
+            saved_paths.append(file_path)
+        
+        return saved_paths
+        
+    except Exception as e:
+        # Cleanup all saved files on error
+        for path in saved_paths:
+            cleanup_file(path)
+        raise
+
+
+def cleanup_multiple_files(file_paths: List[str]) -> None:
+    """
+    Remove multiple files from disk
+    
+    Args:
+        file_paths: List of file paths to be removed
+    """
+    for file_path in file_paths:
+        cleanup_file(file_path)
