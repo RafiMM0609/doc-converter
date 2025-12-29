@@ -27,9 +27,21 @@ pip install -r requirements.txt
 
 ### Starting the Server
 
+**Development Mode:**
 Run the Flask application:
 ```bash
 python app.py
+```
+
+**Production Mode:**
+For production deployments, disable debug mode and use a production WSGI server:
+```bash
+# Disable debug mode
+export FLASK_DEBUG=false
+
+# Use Gunicorn (recommended for production)
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
 The server will start on `http://localhost:5000`
@@ -156,7 +168,7 @@ python -m unittest test_app.py -v
 - Python 3.7+
 - Flask 3.0.0
 - PyPDF2 3.0.1
-- Werkzeug 3.0.1
+- Werkzeug 3.0.3
 
 ## Configuration
 

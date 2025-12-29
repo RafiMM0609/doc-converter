@@ -155,4 +155,8 @@ def method_not_allowed(error):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Debug mode should be disabled in production
+    # Set FLASK_ENV=production and FLASK_DEBUG=0 for production deployments
+    import os
+    debug_mode = os.environ.get('FLASK_DEBUG', 'true').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
