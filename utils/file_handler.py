@@ -51,18 +51,28 @@ def save_upload_file(file: UploadFile) -> str:
         unique_filename = f"{uuid.uuid4()}{file_ext}"
         file_path = os.path.join(UPLOAD_DIR, unique_filename)
         
-        # Save file
+        # Save file in chunks and check size
+        total_size = 0
+        chunk_size = 1024 * 1024  # 1 MB chunks
+        
         with open(file_path, "wb") as buffer:
-            content = file.file.read()
-            
-            # Check file size
-            if len(content) > MAX_FILE_SIZE:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"File size exceeds maximum allowed size of {MAX_FILE_SIZE / (1024 * 1024)} MB"
-                )
-            
-            buffer.write(content)
+            while True:
+                chunk = file.file.read(chunk_size)
+                if not chunk:
+                    break
+                
+                total_size += len(chunk)
+                
+                # Check if size exceeds limit
+                if total_size > MAX_FILE_SIZE:
+                    # Remove partial file
+                    cleanup_file(file_path)
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"File size exceeds maximum allowed size of {MAX_FILE_SIZE / (1024 * 1024)} MB"
+                    )
+                
+                buffer.write(chunk)
         
         return file_path
     except HTTPException:
