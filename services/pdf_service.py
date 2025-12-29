@@ -82,20 +82,18 @@ def merge_pdfs(pdf_paths: List[str]) -> str:
             if not os.path.exists(pdf_path):
                 raise HTTPException(status_code=400, detail=f"PDF file not found: {pdf_path}")
         
-        # Create PDF merger
-        merger = PdfMerger()
-        
-        # Add all PDFs to merger
-        for pdf_path in pdf_paths:
-            merger.append(pdf_path)
-        
         # Generate unique filename for output
         output_filename = f"{uuid.uuid4()}.pdf"
         output_path = os.path.join(CONVERTED_DIR, output_filename)
         
-        # Write merged PDF
-        merger.write(output_path)
-        merger.close()
+        # Create PDF merger with context manager for proper resource cleanup
+        with PdfMerger() as merger:
+            # Add all PDFs to merger
+            for pdf_path in pdf_paths:
+                merger.append(pdf_path)
+            
+            # Write merged PDF
+            merger.write(output_path)
         
         return output_path
         
