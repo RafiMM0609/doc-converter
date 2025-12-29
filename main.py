@@ -8,8 +8,8 @@ from routers import converter
 
 # Create FastAPI application
 app = FastAPI(
-    title="PDF to JPG Converter API",
-    description="Simple API to convert PDF files (max 1 page) to JPG images",
+    title="PDF Converter API",
+    description="API to convert PDF files to JPG images and merge multiple PDFs",
     version="1.0.0"
 )
 
@@ -30,10 +30,11 @@ app.include_router(converter.router)
 async def root():
     """Root endpoint with API information"""
     return {
-        "message": "PDF to JPG Converter API",
+        "message": "PDF Converter API",
         "version": "1.0.0",
         "endpoints": {
             "convert": "/api/convert-pdf-to-jpg",
+            "merge": "/api/merge-pdfs",
             "docs": "/docs",
             "redoc": "/redoc"
         }
