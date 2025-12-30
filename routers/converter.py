@@ -9,6 +9,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from services.pdf_service import convert_pdf_to_jpg, merge_pdfs, split_pdf
 from models.schemas import SplitPdfResponse, SplitFileInfo
+from config import CONVERTED_DIR
 from utils.file_handler import (
     validate_file, 
     save_upload_file, 
@@ -190,17 +191,37 @@ async def download_file(filename: str):
     
     Returns the requested file
     """
-    from config import CONVERTED_DIR
+    # Validate filename to prevent path traversal attacks
+    # Only allow alphanumeric characters, hyphens, underscores, and dots
+    safe_filename = os.path.basename(filename)
+    if filename != safe_filename or '..' in filename or '/' in filename or '\\' in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
     
-    file_path = os.path.join(CONVERTED_DIR, filename)
+    file_path = os.path.join(CONVERTED_DIR, safe_filename)
+    
+    # Ensure the resolved path is still within CONVERTED_DIR
+    resolved_path = os.path.abspath(file_path)
+    converted_dir_abs = os.path.abspath(CONVERTED_DIR)
+    if not resolved_path.startswith(converted_dir_abs):
+        raise HTTPException(status_code=400, detail="Invalid file path")
     
     # Check if file exists
-    if not os.path.exists(file_path):
+    if not os.path.exists(resolved_path):
         raise HTTPException(status_code=404, detail="File not found")
+    
+    # Determine media type based on file extension
+    file_ext = Path(safe_filename).suffix.lower()
+    media_type_map = {
+        '.pdf': 'application/pdf',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png'
+    }
+    media_type = media_type_map.get(file_ext, 'application/octet-stream')
     
     # Return the file
     return FileResponse(
-        path=file_path,
-        media_type="application/pdf",
-        filename=filename
+        path=resolved_path,
+        media_type=media_type,
+        filename=safe_filename
     )
