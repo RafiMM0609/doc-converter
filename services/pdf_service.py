@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 from typing import List
 from pdf2image import convert_from_path
-from PyPDF2 import PdfMerger
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from fastapi import HTTPException
 from config import MAX_PAGES, DPI, IMAGE_FORMAT, CONVERTED_DIR
 
@@ -101,3 +101,55 @@ def merge_pdfs(pdf_paths: List[str]) -> str:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to merge PDFs: {str(e)}")
+
+
+def split_pdf(pdf_path: str) -> List[str]:
+    """
+    Split a PDF file into individual pages
+    
+    Args:
+        pdf_path: Path to the PDF file to split
+        
+    Returns:
+        List of paths to the split PDF files (one file per page)
+        
+    Raises:
+        HTTPException: If split fails
+    """
+    try:
+        # Verify file exists
+        if not os.path.exists(pdf_path):
+            raise HTTPException(status_code=400, detail=f"PDF file not found: {pdf_path}")
+        
+        # Read the PDF
+        reader = PdfReader(pdf_path)
+        num_pages = len(reader.pages)
+        
+        if num_pages == 0:
+            raise HTTPException(status_code=400, detail="PDF file has no pages")
+        
+        # List to store paths of split PDFs
+        split_paths = []
+        
+        # Split each page into a separate PDF
+        for page_num in range(num_pages):
+            # Create a new PDF writer for this page
+            writer = PdfWriter()
+            writer.add_page(reader.pages[page_num])
+            
+            # Generate unique filename for output
+            output_filename = f"{uuid.uuid4()}_page_{page_num + 1}.pdf"
+            output_path = os.path.join(CONVERTED_DIR, output_filename)
+            
+            # Write the single-page PDF
+            with open(output_path, "wb") as output_file:
+                writer.write(output_file)
+            
+            split_paths.append(output_path)
+        
+        return split_paths
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to split PDF: {str(e)}")
