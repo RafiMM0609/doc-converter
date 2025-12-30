@@ -192,17 +192,23 @@ async def download_file(filename: str):
     Returns the requested file
     """
     # Validate filename to prevent path traversal attacks
-    # Only allow alphanumeric characters, hyphens, underscores, and dots
-    safe_filename = os.path.basename(filename)
-    if filename != safe_filename or '..' in filename or '/' in filename or '\\' in filename:
+    # Check for path traversal patterns first
+    if '..' in filename or '/' in filename or '\\' in filename:
         raise HTTPException(status_code=400, detail="Invalid filename")
     
+    # Use basename as additional security layer
+    safe_filename = os.path.basename(filename)
     file_path = os.path.join(CONVERTED_DIR, safe_filename)
     
-    # Ensure the resolved path is still within CONVERTED_DIR
+    # Ensure the resolved path is still within CONVERTED_DIR using commonpath
     resolved_path = os.path.abspath(file_path)
     converted_dir_abs = os.path.abspath(CONVERTED_DIR)
-    if not resolved_path.startswith(converted_dir_abs):
+    try:
+        common_path = os.path.commonpath([resolved_path, converted_dir_abs])
+        if common_path != converted_dir_abs:
+            raise HTTPException(status_code=400, detail="Invalid file path")
+    except ValueError:
+        # Paths are on different drives (Windows) or other path issues
         raise HTTPException(status_code=400, detail="Invalid file path")
     
     # Check if file exists

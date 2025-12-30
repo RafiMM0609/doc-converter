@@ -123,6 +123,11 @@ def split_pdf(pdf_path: str) -> List[str]:
         
         # Read the PDF
         reader = PdfReader(pdf_path)
+        
+        # Check if PDF is encrypted
+        if reader.is_encrypted:
+            raise HTTPException(status_code=400, detail="Cannot split encrypted PDF files")
+        
         num_pages = len(reader.pages)
         
         if num_pages == 0:
