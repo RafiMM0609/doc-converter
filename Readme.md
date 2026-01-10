@@ -6,6 +6,7 @@ Simple FastAPI backend service for converting PDF files and merging multiple PDF
 
 - Convert PDF to JPG (first page only)
 - Merge multiple PDF files into a single PDF
+- Split PDF files into individual pages
 - Clean code architecture with separated concerns
 - File validation and error handling
 - RESTful API with automatic documentation
@@ -99,6 +100,20 @@ The API will be available at: `http://localhost:8000`
 - **Parameters:**
   - `files`: List of PDF files (multipart/form-data, minimum 2 files)
 - **Response:** Merged PDF file
+
+#### Split PDF
+- **POST** `/api/split-pdf`
+- Upload a PDF file and split it into individual pages
+- **Parameters:**
+  - `file`: PDF file (multipart/form-data)
+- **Response:** JSON with list of split PDF files information
+
+#### Download Split File
+- **GET** `/api/download/{filename}`
+- Download a specific split PDF file
+- **Parameters:**
+  - `filename`: Name of the file to download
+- **Response:** PDF file
 
 ### API Documentation
 
@@ -211,6 +226,72 @@ fetch('http://localhost:8000/api/merge-pdfs', {
   a.href = url;
   a.download = 'merged.pdf';
   a.click();
+});
+```
+
+### Split PDF
+
+#### Using cURL
+
+```bash
+curl -X POST "http://localhost:8000/api/split-pdf" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/path/to/document.pdf"
+```
+
+#### Using Python Requests
+
+```python
+import requests
+
+url = "http://localhost:8000/api/split-pdf"
+files = {'file': open('document.pdf', 'rb')}
+
+response = requests.post(url, files=files)
+
+if response.status_code == 200:
+    result = response.json()
+    print(f"PDF split into {result['total_pages']} pages")
+    
+    # Download each split file
+    for file_info in result['files']:
+        download_url = f"http://localhost:8000{file_info['file_path']}"
+        file_response = requests.get(download_url)
+        
+        with open(file_info['filename'], 'wb') as f:
+            f.write(file_response.content)
+        print(f"Downloaded: {file_info['filename']}")
+else:
+    print(f"Error: {response.status_code}")
+```
+
+#### Using JavaScript Fetch
+
+```javascript
+const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+
+fetch('http://localhost:8000/api/split-pdf', {
+  method: 'POST',
+  body: formData
+})
+.then(response => response.json())
+.then(data => {
+  console.log(`PDF split into ${data.total_pages} pages`);
+  
+  // Download each split file
+  data.files.forEach(fileInfo => {
+    fetch(`http://localhost:8000${fileInfo.file_path}`)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileInfo.filename;
+        a.click();
+      });
+  });
 });
 ```
 

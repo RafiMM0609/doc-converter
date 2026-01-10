@@ -9,7 +9,7 @@ from routers import converter
 # Create FastAPI application
 app = FastAPI(
     title="PDF Converter API",
-    description="API to convert PDF files to JPG images and merge multiple PDFs",
+    description="API to convert PDF files to JPG images, merge multiple PDFs, and split PDFs into individual pages",
     version="1.0.0"
 )
 
@@ -35,6 +35,8 @@ async def root():
         "endpoints": {
             "convert": "/api/convert-pdf-to-jpg",
             "merge": "/api/merge-pdfs",
+            "split": "/api/split-pdf",
+            "download": "/api/download/{filename}",
             "docs": "/docs",
             "redoc": "/redoc"
         }
