@@ -4,6 +4,7 @@ Main FastAPI application entry point for PDF to JPG converter service
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from routers import converter
 
 # Create FastAPI application
@@ -25,13 +26,17 @@ app.add_middleware(
 # Include routers
 app.include_router(converter.router)
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information"""
+    """Root endpoint with UI and API information"""
     return {
         "message": "PDF Converter API",
         "version": "1.0.0",
+        "ui": "http://localhost:8000/index.html",
         "endpoints": {
             "convert": "/api/convert-pdf-to-jpg",
             "merge": "/api/merge-pdfs",

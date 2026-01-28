@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Converter - Convert & Merge PDFs</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">📄 PDF Converter</h1>
+                <p class="tagline">Convert & Merge your PDF files with ease</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs Navigation -->
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="convert">Convert to Image</button>
+                <button class="tab-btn" data-tab="merge">Merge PDFs</button>
+            </div>
+
+            <!-- Convert Tab -->
+            <div id="convert" class="tab-content active">
+                <div class="card">
+                    <h2>Convert PDF to JPG</h2>
+                    <p class="description">Upload a PDF file and convert its first page to a JPG image</p>
+                    
+                    <div class="upload-area" id="convertUploadArea">
+                        <div class="upload-icon">📎</div>
+                        <h3>Drop your PDF here or click to select</h3>
+                        <p>Maximum file size: 10 MB</p>
+                        <input type="file" id="convertFileInput" accept=".pdf" hidden>
+                    </div>
+
+                    <div id="convertFileInfo" class="file-info" style="display: none;">
+                        <div class="file-item">
+                            <span class="file-name" id="convertFileName"></span>
+                            <span class="file-size" id="convertFileSize"></span>
+                            <button type="button" class="btn-remove" onclick="clearConvertFile()">✕</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="convertBtn" onclick="convertPdf()" style="display: none;">
+                        Convert to JPG
+                    </button>
+                </div>
+
+                <!-- Convert Progress -->
+                <div id="convertProgress" class="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="convertProgressBar"></div>
+                    </div>
+                    <p id="convertProgressText">Converting... Please wait</p>
+                </div>
+
+                <!-- Convert Result -->
+                <div id="convertResult" class="card result" style="display: none;">
+                    <h3>Conversion Successful! ✓</h3>
+                    <div class="preview-container">
+                        <img id="convertPreview" alt="Converted image">
+                    </div>
+                    <div class="result-info">
+                        <p id="convertResultInfo"></p>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="convertDownloadBtn" onclick="downloadConvertResult()">
+                            Download JPG
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetConvertTab()">Convert Another</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Merge Tab -->
+            <div id="merge" class="tab-content">
+                <div class="card">
+                    <h2>Merge Multiple PDFs</h2>
+                    <p class="description">Upload multiple PDF files and merge them into a single PDF</p>
+                    
+                    <div class="upload-area" id="mergeUploadArea">
+                        <div class="upload-icon">📚</div>
+                        <h3>Drop your PDF files here or click to select</h3>
+                        <p>Minimum 2 files required • Maximum file size: 10 MB each</p>
+                        <input type="file" id="mergeFileInput" accept=".pdf" multiple hidden>
+                    </div>
+
+                    <div id="mergeFileInfo" class="file-list" style="display: none;">
+                        <div class="file-header">
+                            <span>Selected Files (<span id="mergeFileCount">0</span>)</span>
+                            <button type="button" class="btn-clear-all" onclick="clearMergeFiles()">Clear All</button>
+                        </div>
+                        <ul id="mergeFilesList" class="file-items"></ul>
+                    </div>
+
+                    <button class="btn btn-primary" id="mergeBtn" onclick="mergePdfs()" style="display: none;">
+                        Merge PDFs
+                    </button>
+                </div>
+
+                <!-- Merge Progress -->
+                <div id="mergeProgress" class="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="mergeProgressBar"></div>
+                    </div>
+                    <p id="mergeProgressText">Merging PDFs... Please wait</p>
+                </div>
+
+                <!-- Merge Result -->
+                <div id="mergeResult" class="card result" style="display: none;">
+                    <h3>Merge Successful! ✓</h3>
+                    <div class="result-info">
+                        <p id="mergeResultInfo"></p>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="mergeDownloadBtn" onclick="downloadMergeResult()">
+                            Download PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetMergeTab()">Merge More</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>PDF Converter API v1.0.0 • <a href="#" onclick="showApiDocs()">View API Docs</a></p>
+        </footer>
+    </div>
+
+    <!-- Error Notification -->
+    <div id="errorNotification" class="notification notification-error" style="display: none;">
+        <div class="notification-content">
+            <span class="notification-title">Error</span>
+            <p id="errorMessage"></p>
+        </div>
+        <button class="notification-close" onclick="closeNotification()">✕</button>
+    </div>
+
+    <!-- Success Notification -->
+    <div id="successNotification" class="notification notification-success" style="display: none;">
+        <div class="notification-content">
+            <span class="notification-title">Success</span>
+            <p id="successMessage"></p>
+        </div>
+        <button class="notification-close" onclick="closeNotification()">✕</button>
+    </div>
+
+    <script src="static/app.js"></script>
+</body>
+</html>
