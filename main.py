@@ -5,6 +5,8 @@ Main FastAPI application entry point for PDF to JPG converter service
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 from routers import converter
 
 # Create FastAPI application
@@ -50,6 +52,15 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
+
+
+@app.get("/index.html")
+async def serve_index():
+    """Serve index.html"""
+    file_path = os.path.join(os.path.dirname(__file__), "index.html")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="text/html")
+    return {"detail": "index.html not found"}
 
 
 if __name__ == "__main__":
